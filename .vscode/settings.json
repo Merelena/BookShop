@@ -1,0 +1,15 @@
+{
+    "python.pythonPath": "C:\\Users\\grain\\.virtualenvs\\BookShop-Rs9kzhek\\Scripts\\python.exe",
+    "[javascript]": {
+        "editor.tabSize": 2
+    },
+    "[python]": {
+        "editor.tabSize": 4
+    },
+    "[html]": {
+        "editor.tabSize": 2
+    },
+    "[css]": {
+        "editor.tabSize": 2
+    }
+}

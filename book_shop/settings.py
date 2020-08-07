@@ -24,6 +24,20 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGIN_REDIRECT_URL = '/'
+
+DEFAULT_FROM_EMAIL = 'admin@mgmail.com'
+SERVER_EMAIL = 'admin@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
 # User 
 
 AUTH_USER_MODEL = 'app_user.CustomUser'
@@ -32,15 +46,14 @@ AUTH_USER_MODEL = 'app_user.CustomUser'
 # Application definition
 
 INSTALLED_APPS = [
-    'djoser',	
     'rest_framework',
-    'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
     'app_book',
     'app_user',
 ]

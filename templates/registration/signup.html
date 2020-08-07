@@ -1,0 +1,22 @@
+
+{% extends  'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block main %}
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Регистрация</h4>
+
+            <form method="post">
+                {% csrf_token %}
+                Имя : <input type="text" name="first_name"><br>
+                Фамилия : <input type="text" name="last_name"><br>
+                Email: <input type="email" name="email"><br>
+                Город: <input type="text" name="city"><br>
+                Адрес: <input type="text" name="address"><br>
+                Номер телефона: <input type="text" name="phone_number"><br>
+                <input type="submit" value="Регистрация">
+            </form>
+        </div>
+    </div>
+{% endblock %}

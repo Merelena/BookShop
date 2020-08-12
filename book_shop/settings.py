@@ -90,12 +90,12 @@ WSGI_APPLICATION = 'book_shop.wsgi.application'
 
 # rest_framework
 
-if DEBUG:
+"""if DEBUG:
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ),
-    }
+    }"""
 
 # Database
 

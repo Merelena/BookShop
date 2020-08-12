@@ -1,7 +1,6 @@
 from .models import CustomUser
 from django.shortcuts import redirect, render
 from django.contrib.auth import login, authenticate
-from .forms import SignupForm
 from django.views.generic import TemplateView
 
 class SignupView(TemplateView):

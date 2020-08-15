@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import date
 
 
 class Book(models.Model):
@@ -22,4 +23,4 @@ class Author(models.Model):
 
 class Sale(models.Model):
     article_number = models.ForeignKey('Book', on_delete=models.CASCADE)
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=date.today())

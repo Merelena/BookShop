@@ -7,16 +7,14 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = Author
         fields = '__all__'
 
-    """def create(self, **validated_data):
-        return Author.objects.create(**validated_data)"""
-
 
 class BookListSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer()
-
     class Meta:
         model = Book
         fields = ('name', 'article_number', 'author')
+
+    author = AuthorSerializer()
+
 
     def create(self, validated_data):
         first_name = validated_data['author']['first_name']
@@ -41,9 +39,9 @@ class BookListSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer()
-
     class Meta:
         model = Book
         fields = ('name', 'author')
+
+    author = AuthorSerializer()
 

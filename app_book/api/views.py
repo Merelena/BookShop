@@ -8,6 +8,8 @@ from datetime import date
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django_filters.rest_framework import DjangoFilterBackend
 import unicodecsv
+from django.http import HttpResponse
+
 
 
 class BookListView(mixins.ListModelMixin,
@@ -38,10 +40,13 @@ class BookListView(mixins.ListModelMixin,
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        serializer = BookListSerializer(data=request.data)  # read_only=True
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        if request.user.is_authenticated:
+            serializer = BookListSerializer(data=request.data)  # read_only=True
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return HttpResponse(status=401)
 
 
 @api_view(['GET'])
@@ -73,16 +78,19 @@ def LastMonthView(request):
 
 
 def CSVBooksView(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Type'] = 'application/x-download';
-    response['Content-Disposition'] = 'attachment; filename="Books.csv"'
-    writer = unicodecsv.writer(response, delimiter=';', encoding='utf-8-sig')
-    writer.writerow(['Название', 'Артикул', 'Автор'])
-    for book in Book.objects.all():
-        writer.writerow([book.name, book.article_number, f'{book.author.first_name} '
-                                                         f'{book.author.middle_name} '
-                                                         f'{book.author.last_name}'])
-    return response
+    if request.user.is_authenticated:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Type'] = 'application/x-download';
+        response['Content-Disposition'] = 'attachment; filename="Books.csv"'
+        writer = unicodecsv.writer(response, delimiter=';', encoding='utf-8-sig')
+        writer.writerow(['Название', 'Артикул', 'Автор'])
+        for book in Book.objects.all():
+            writer.writerow([book.name, book.article_number, f'{book.author.first_name} '
+                                                             f'{book.author.middle_name} '
+                                                             f'{book.author.last_name}'])
+        return response
+    else:
+        return HttpResponse(status=401)
 
 
 class AuthorSoldBooksView(mixins.ListModelMixin,

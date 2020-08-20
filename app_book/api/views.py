@@ -1,15 +1,13 @@
-from app_book.models import Sale, Book, Author
-from .serializers import BookListSerializer, AuthorSerializer
+from app_book.models import Sale, Book, Author, Notification, NotificationRead
+from .serializers import BookListSerializer, AuthorSoldSerializer, NotificationSerilizer, NotificationReadSerializer
 from rest_framework.response import Response
-from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework import mixins, viewsets
 from datetime import date
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django_filters.rest_framework import DjangoFilterBackend
 import unicodecsv
 from django.http import HttpResponse
-
+from rest_framework import filters
 
 
 class BookListView(mixins.ListModelMixin,
@@ -18,26 +16,9 @@ class BookListView(mixins.ListModelMixin,
                    ):
     serializer_class = BookListSerializer
     queryset = Book.objects.all()
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ('name', 'article_number', 'author__first_name')
-
-    def list(self, request):
-        # Dictionary for sorting
-        order_by_dict = {'book_name': 'name', 'author_name': 'author__first_name', 'article_number': 'article_number'}
-        try:
-            books = self.queryset.order_by(order_by_dict[request.GET['order_by']])
-        except KeyError:
-            books = self.queryset
-        paginator = Paginator(books, 20)
-        page = self.request.GET.get('page')
-        try:
-            books = paginator.page(page)
-        except PageNotAnInteger:
-            books = paginator.page(1)
-        except EmptyPage:
-            books = paginator.page(paginator.num_pages)
-        serializer = BookListSerializer(books, many=True)
-        return Response(serializer.data)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ['name', 'article_number', 'author__first_name']
+    ordering_fields = ['name', 'article_number', 'author__first_name']
 
     def create(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -98,23 +79,35 @@ class AuthorSoldBooksView(mixins.ListModelMixin,
                           viewsets.GenericViewSet):
     """ For statistics of sold books by authors"""
     queryset = Author.objects.all()
-    serializer_class = AuthorSerializer
+    serializer_class = AuthorSoldSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ('first_name', 'last_name', 'middle_name')
 
-    def list(self, request):
-        sold_books_percent = {}
-        first_name = request.GET['first_name']
-        last_name = request.GET['last_name']
-        middle_name = request.GET['middle_name']
-        authors = Author.objects.filter(first_name__icontains=first_name,
-                                        last_name__icontains=last_name,
-                                        middle_name__icontains=middle_name)
-        for author in authors:
-            sold_books = Sale.objects.filter(article_number__author=author).count()
-            all_books = Book.objects.filter(author=author).count()
-            sold_books_percent[f'{author.first_name} {author.middle_name} {author.last_name}'] = \
-                100 * sold_books / all_books
-        return Response(sold_books_percent)
+
+@api_view(['GET'])
+def SystemNotificationView(request):
+    messages = Notification.objects.filter(is_personal=False).exclude(users=request.user).order_by('-date')
+    serializer = NotificationSerilizer(messages, many=True)
+    return Response(serializer.data)
 
 
+@api_view(['GET'])
+def CustomNoficationView(request):
+    return Response({
+        'read': NotificationSerilizer(
+            Notification.objects.filter(is_personal=True, users=request.user).order_by('-date')[:5], many=True).data,
+        'not_read': NotificationSerilizer(
+            Notification.objects.filter(is_personal=True).exclude(users=request.user).order_by('-date'), many=True).data
+    })
+
+
+class CreateNotificationReadView(mixins.CreateModelMixin,
+                                 viewsets.GenericViewSet):
+    queryset = NotificationRead.objects.all()
+    serializer_class = NotificationReadSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = NotificationReadSerializer(data=request.data)  # read_only=True
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import date
+from app_user.models import CustomUser
 
 
 class Book(models.Model):
@@ -30,3 +31,18 @@ class Sale(models.Model):
 
     article_number = models.ForeignKey('Book', on_delete=models.CASCADE)
     date = models.DateField(default=date.today())
+
+
+class NotificationRead(models.Model):
+    users = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    notes = models.ForeignKey("Notification", on_delete=models.CASCADE)
+
+
+class Notification(models.Model):
+    message = models.TextField(blank=True, null=True)
+    date = models.DateField(default=date.today())
+    is_personal = models.BooleanField(default=False, blank=True)
+    users = models.ManyToManyField(CustomUser, through=NotificationRead)
+
+    def __str__(self):
+        return self.message

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from app_book.models import Book, Author
+from app_book.models import Book, Author, Notification, NotificationRead, Sale
 from django.http import HttpResponse
 
 
@@ -42,3 +42,28 @@ class BookSerializer(serializers.ModelSerializer):
 
     author = AuthorSerializer()
 
+
+class NotificationReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationRead
+        fields = '__all__'
+
+
+class NotificationSerilizer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('message', 'date', 'users', 'is_personal')
+
+
+class AuthorSoldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ('first_name', 'last_name', 'middle_name', 'percent')
+
+    percent = serializers.SerializerMethodField()
+
+    def get_percent(self, obj):
+        sold_books = Sale.objects.filter(article_number__author=obj).count()
+        all_books = Book.objects.filter(author=obj).count()
+        percent = 100 * sold_books / all_books
+        return percent
